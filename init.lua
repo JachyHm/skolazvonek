@@ -1,18 +1,15 @@
--- load credentials, 'SSID' and 'PASSWORD' declared and initialize in there
 dofile("wificonf.lua")
 function startup()
     if file.open("init.lua") == nil then
         print("init.lua deleted or renamed")
     else
         file.close("init.lua")
-        -- the actual application is stored in 'application.lua'
         dofile("zvonek.lua")
     end
 end
 print("Probiha pripojovani k siti WiFi...")
 wifi.setmode(wifi.STATION)
 wifi.sta.config(SSID, HESLO)
--- wifi.sta.connect() not necessary because config() uses auto-connect=true by default
 tmr.alarm(2, 1000, 1, function()
     if wifi.sta.getip() == nil then
         print("Cekani na odpoved serveru...")
