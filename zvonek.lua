@@ -12,7 +12,7 @@ print("Overuji integritu souboru")
 print("Ukoncuji procesy z minule relace")
 print("Zavadim system")
 casraw = rtctime.epoch2cal(rtctime.get())
-aktualnicas = tonumber(string.format("%02d%02d%02d", casraw["hour"], casraw["min"], casraw["sec"]))
+aktualnicas = tonumber(string.format("%02d%02d%02d", casraw["hour"], casraw["min"], casraw["sec"]))+10000
 poslednicheck=aktualnicas
 --tady zapíšu aktualnicas do RTC modulu
 --porovnám soubor zvoneni.txt se serverem
@@ -21,6 +21,7 @@ poslednicheck=aktualnicas
 -- end
 print("Aktualni cas je:"..aktualnicas)
 function nejblizsizvon()
+	byloposlednizvoneni = false
 	zvonenisoubor = file.open("zvoneni.txt","r")
 	while true do
 		while true do
@@ -64,7 +65,7 @@ tmr.alarm(3,1000,1,function()
 		print(nejblizsizvondelka)
 	end
 	i = i + 1
-	aktualnicas = tonumber(string.format("%02d%02d%02d", casraw["hour"], casraw["min"], casraw["sec"]))
+	aktualnicas = tonumber(string.format("%02d%02d%02d", casraw["hour"], casraw["min"], casraw["sec"]))+10000
 	if aktualnicas ~= "" or aktualnicas ~= nil then
 		if nejblizsizvoncas <= aktualnicas then
 			if nejblizsizvoncas + nejblizsizvondelka > aktualnicas then
@@ -78,9 +79,9 @@ tmr.alarm(3,1000,1,function()
 			end
 		end
 		if tonumber(aktualnicas) - tonumber(poslednicheck) > 120000 then
-			sntp.sync({"0.cz.pool.ntp.org","1.cz.pool.ntp.org","2.cz.pool.ntp.org","3.cz.pool.ntp.org"},
+			sntp.sync({"tik.cesnet.cz","tak.cesnet.cz"},
 				function(sec, usec, server, info)
-					print("Úspěšná synchronizace, čas od UNIX epochy:", sec, usec,", použitý server:", server,", další informace:", info)
+					print("Uspesna synchronizace, cas od UNIX epochy:", sec, usec,", pouzity server:", server,", dalsi informace:", info)
 				end,
 				function()
 					print("Selhala synchronizace s NTP!")

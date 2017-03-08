@@ -1,2 +1,2 @@
-SSID="EMtest"
-HESLO="13znakudlouhe"
+SSID="oblvn2"
+HESLO="26znakudlouhe"
