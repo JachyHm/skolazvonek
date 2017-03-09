@@ -1,0 +1,33 @@
+VERZE PošliDoNodeMCU(PDN) 1.0 (9.3.2017)
+
+Program slouí k nahrání souboru s èasy zvonìní (zvoneni.txt) a konfiguraèního souboru s SSID sítì a heslem k síti (wificonf.lua) do zaøízení Zvonek. V souboru IPnodeMCU.ini musí bıt zvolena správná IP adresa zaøízení a ve sloce s aplikací musí bıt pøítomné všechny potøebné soubory (zvoneni.txt; wificonf.lua; IPnodeMCU.ini) jinak se program ukonèí bez varování! Pøi nahrávání nového souboru zvonìní mìjte vdy na pamìti, e ve sloce musí bıt vdy správnı WiFiConf, jinak se zaøízení nepøipojí k WiFi a ji nepùjde pøehrát! Po kadém nahrání vyèkejte cca. 30 vteøin. Zaøízení se znovu zavádí. 
+
+WiFiConf musí bıt vdy platnı pro aktuální WiFi sí a musí se pøed její zmìnou pøehrát, jinak se zaøízení nepøipojí a nepùjde pøehrát!
+
+Struktury souborù:
+
+Zvoneni.txt (soubor s definicemi èasù zvonìní):
+Všechny èasy musí bıt øazeny chronologicky od nejdøívìjšího po nejpozdìjší, jinak není zaruèen správnı chod zaøízení!
+Na kadém øádku smí bıt maximálnì jeden èas zvonìní. Èas zvonení a délku zvonìní oddìlujeme mezerníkem (znak 0x20). Kadı zápis zvonìní musí bıt ukonèen Enterem (znak \n, resp. EOL (EndOfLine), resp. 0x0A).
+Vzorovı pøíklad pro zvonìní v osm hodin dvacet minut po dobu dvaceti vteøin:
+
+082000 20
+
+Èasy není nutné doplòovat zleva nulami do poètu, take vıše zmínìnı èas je moné zapsat i jako 82000.
+Délka zvonìní mùe bıt i delší ne 59 vteøin, zde je ale nutné pøipomenout, e po 59 nenásleduje 60, ale 100 a dále pokraèuje pøièítání a po hodnotu 159, kde se opìt první èíslice o jedno zvìtší. V tomto poli se nesmí vyskytnout hodnota vìtší 60 vèetnì, jinak nastane neošetøená vyjímka!
+
+Zápis zvonìní v 11:49 po dobu jedné minuty a 29 vteøin a poté ve 12:15:13 po dobu jedné vteøiny bude vypadat takto:
+
+114900 129
+121513 1
+
+nebo takto
+
+114900 129
+121513 001
+
+opìt je jedno, zda-li pro pøehlednost doplníme èíslo zleva nulami.
+
+V souèasné dobì pracuji na statické IP adrese, kde ji nebude nutné pøed nahráním zjišovat IP adresu zaøízení.
+
+V Praze 9.3.2017 Jáchym Hurtík

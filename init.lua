@@ -1,5 +1,6 @@
 -- -- load credentials, 'SSID' and 'PASSWORD' declared and initialize in there
 dofile("wificonf.lua")
+selhalaNTP = false
 function startup()
     if file.open("init.lua") == nil then
         print("init.lua deleted or renamed")
@@ -9,6 +10,7 @@ function startup()
         dofile("zvonek.lua")
     end
 end
+
 print("Probiha pripojovani k siti WiFi...")
 wifi.setmode(wifi.STATION)
 wifi.sta.config(SSID, HESLO)
@@ -26,16 +28,16 @@ tmr.alarm(2, 1000, 1, function()
 		end,
 		function()
 			print("Selhala synchronizace s NTP!")
-			tmr.stop(1)
+			selhalaNTP = true
 		end
 		)
 		tmr.alarm(1, 1000, 1, function()
-			if rtctime.get() == 0 then
-				print("Cekani na odpoved NTP serveru...")
-			else
+			if rtctime.get() ~= 0 or selhalaNTP == true then
 				tmr.stop(1)
 				print("Pro preruseni zavadeni systemu stisknete libovolnou klavesu...")
 				tmr.alarm(0, 3000, 0, startup)
+			else
+				print("Cekani na odpoved NTP serveru...")
 			end
 		end)
     end

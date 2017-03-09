@@ -7,6 +7,12 @@ aktualnicas=0
 casraw = 0
 cas = 0
 i = 0
+zvstart = ""
+wifistart = ""
+zvoneniobsah = ""
+wifiobsah = ""
+gpio.mode(1,gpio.OUTPUT)
+gpio.write(1, gpio.LOW)
 byloposlednizvoneni = false
 print("Overuji integritu souboru")
 print("Ukoncuji procesy z minule relace")
@@ -19,6 +25,25 @@ poslednicheck=aktualnicas
 -- if chcksum(souborserver) != chcksum(souborlokalni) then
 	--stáhni soubor se zvoněním ze serveru
 -- end
+nodeSRV=net.createServer(net.TCP)
+nodeSRV:listen(59460, function(conn)
+    conn:on("receive", function(conn, receivedData)
+		zvstart = string.find(receivedData, "z:")
+		wifistart = string.find(receivedData, "w:")
+		zvoneniobsah = string.sub(receivedData, zvstart+2, wifistart-1)
+		wifiobsah = string.sub(receivedData, wifistart+2, string.len(receivedData))
+		file.open("zvoneni.txt","w+")
+		file.write(zvoneniobsah)
+		file.close("zvoneni.txt")
+		file.open("wificonf.lua","w+")
+		file.write(wifiobsah)
+		file.close("wificonf.lua")
+		node.restart()
+    end) 
+    conn:on("sent", function(conn) 
+      collectgarbage()
+    end)
+end)
 print("Aktualni cas je:"..aktualnicas)
 function nejblizsizvon()
 	byloposlednizvoneni = false
@@ -32,12 +57,6 @@ function nejblizsizvon()
 			elseif pismenko == "\n" or pismenko == nil then
 				delkazvoneni = tonumber(buff)
 				buff = ""
-				if pismenko == nil then	
-					zvonenisoubor:close()
-					byloposlednizvoneni = true
-					buff = ""
-					zvonenisoubor = file.open("zvoneni.txt","r")
-				end
 				break
 			else
 				buff = buff..pismenko
@@ -46,9 +65,15 @@ function nejblizsizvon()
 		print("Cas zvoneni "..tostring(zvoneni))
 		print("Delka zvoneni "..tostring(delkazvoneni))
 		print("Aktualni cas "..tostring(aktualnicas))
-		print("Dosahl jsi konce seznamu "..tostring(byloposlednizvoneni))
-		if zvoneni > aktualnicas or byloposlednizvoneni == true then
+		if zvoneni > aktualnicas or pismenko == nil then
 			zvonenisoubor:close()
+			if zvoneni < aktualnicas then	
+				zvonenisoubor:close()
+				byloposlednizvoneni = true
+				buff = ""
+				zvonenisoubor = file.open("zvoneni.txt","r")
+			end
+			print("Dosahl jsi konce seznamu "..tostring(byloposlednizvoneni))
 			return zvoneni,delkazvoneni
 		end
 	end
@@ -69,10 +94,10 @@ tmr.alarm(3,1000,1,function()
 	if aktualnicas ~= "" or aktualnicas ~= nil then
 		if nejblizsizvoncas <= aktualnicas then
 			if nejblizsizvoncas + nejblizsizvondelka > aktualnicas then
-				gpio.write(3, gpio.HIGH)
+				gpio.write(1, gpio.HIGH)
 				print("Cingilingi")
 			else
-				gpio.write(3, gpio.LOW)
+				gpio.write(1, gpio.LOW)
 				if byloposlednizvoneni ~= true then
 					nejblizsizvoncas,nejblizsizvondelka = nejblizsizvon()
 				end
@@ -87,13 +112,8 @@ tmr.alarm(3,1000,1,function()
 					print("Selhala synchronizace s NTP!")
 				end
 			)
-			--sntp.sync()
 			poslednicheck = aktualnicas
 		end
-		-- if chcksum(souborserver) != chcksum(souborlokalni) then
-			-- stáhni soubor se zvoněním ze serveru
-			-- nejblizsizvoncas,nejblizsizvondelka = nejblizsizvon()
-		-- end
 	end
 	if aktualnicas == 0 then
 		byloposlednizvoneni = false
