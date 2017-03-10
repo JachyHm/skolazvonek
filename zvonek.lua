@@ -11,7 +11,12 @@ zvstart = ""
 wifistart = ""
 zvoneniobsah = ""
 wifiobsah = ""
+gpio2stare=0
 gpio.mode(1,gpio.OUTPUT)
+gpio.mode(2,gpio.INPUT)
+gpio.mode(3,gpio.INPUT)
+gpio.mode(7,gpio.INPUT)
+gpio.write(6, gpio.HIGH)
 gpio.write(1, gpio.LOW)
 byloposlednizvoneni = false
 print("Overuji integritu souboru")
@@ -25,6 +30,7 @@ poslednicheck=aktualnicas
 -- if chcksum(souborserver) != chcksum(souborlokalni) then
 	--stáhni soubor se zvoněním ze serveru
 -- end
+wifi.sta.sethostname("Zvonek")
 nodeSRV=net.createServer(net.TCP)
 nodeSRV:listen(59460, function(conn)
     conn:on("receive", function(conn, receivedData)
@@ -94,28 +100,50 @@ tmr.alarm(3,1000,1,function()
 	if aktualnicas ~= "" or aktualnicas ~= nil then
 		if nejblizsizvoncas <= aktualnicas then
 			if nejblizsizvoncas + nejblizsizvondelka > aktualnicas then
-				gpio.write(1, gpio.HIGH)
-				print("Cingilingi")
+				if gpio.read(3) == 0 then
+					gpio.write(1, gpio.HIGH)
+					print("Cingilingi")
+				end
 			else
-				gpio.write(1, gpio.LOW)
+				if gpio.read(2) ~= 1 then
+					gpio.write(1, gpio.LOW)
+				end
 				if byloposlednizvoneni ~= true then
 					nejblizsizvoncas,nejblizsizvondelka = nejblizsizvon()
 				end
 			end
 		end
-		if tonumber(aktualnicas) - tonumber(poslednicheck) > 120000 then
+		if math.abs(tonumber(aktualnicas) - tonumber(poslednicheck)) > 120000 then
 			sntp.sync({"tik.cesnet.cz","tak.cesnet.cz"},
 				function(sec, usec, server, info)
 					print("Uspesna synchronizace, cas od UNIX epochy:", sec, usec,", pouzity server:", server,", dalsi informace:", info)
+					poslednicheck = aktualnicas
+					gpio.write(5, gpio.LOW)
 				end,
 				function()
 					print("Selhala synchronizace s NTP!")
+					gpio.write(5, gpio.HIGH)
 				end
 			)
-			poslednicheck = aktualnicas
 		end
+	end
+	if gpio.read(2) == 1 then
+		gpio.write(1, gpio.HIGH)
+	elseif gpio2stare ~= gpio.read(2) then
+		gpio.write(1, gpio.LOW)
 	end
 	if aktualnicas == 0 then
 		byloposlednizvoneni = false
 	end
+	if byloposlednizvoneni == true then
+		gpio.write(5, gpio.HIGH)
+	else
+		gpio.write(5, gpio.LOW)
+	end
+	if gpio.read(7) == 1 then
+		gpio.write(8, gpio.LOW)
+	else
+		gpio.write(8, gpio.HIGH)
+	end
+	gpio2stare = gpio.read(2)
 end)

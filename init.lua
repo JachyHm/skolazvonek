@@ -1,6 +1,12 @@
 -- -- load credentials, 'SSID' and 'PASSWORD' declared and initialize in there
 dofile("wificonf.lua")
 selhalaNTP = false
+gpio.mode(8,gpio.OUTPUT)
+gpio.mode(5,gpio.OUTPUT)
+gpio.mode(6,gpio.OUTPUT)
+gpio.write(8, gpio.HIGH)
+gpio.write(5, gpio.HIGH)
+gpio.write(6, gpio.LOW)
 function startup()
     if file.open("init.lua") == nil then
         print("init.lua deleted or renamed")
@@ -20,11 +26,13 @@ tmr.alarm(2, 1000, 1, function()
         print("Cekani na odpoved serveru...")
     else
         tmr.stop(2)
+		gpio.write(8, gpio.LOW)
         print("Spojeni navazano, IP adresa: " .. wifi.sta.getip())
 		print("Probiha pripojovani k NTP serveru a synchronizace casu...")
 		sntp.sync({"tik.cesnet.cz","tak.cesnet.cz"},
 		function(sec, usec, server, info)
 			print("Uspesna synchronizace, cas od UNIX epochy:", sec, usec,", pouzity server:", server,", dalsi informace:", info)
+			gpio.write(5, gpio.LOW)
 		end,
 		function()
 			print("Selhala synchronizace s NTP!")
