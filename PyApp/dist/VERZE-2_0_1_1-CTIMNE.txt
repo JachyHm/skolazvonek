@@ -1,0 +1,84 @@
+VERZE PošliDoNodeMCU(PDN) 2.0.1.1 (13.3.2018)
+
+Program slouí k nahrání souboru s èasy zvonìní (zvoneni.txt) a konfiguraèního souboru s SSID sítì a heslem k síti (wificonf.lua)do zaøízení Zvonek verze 2.
+Ve sloce s aplikací musí bıt pøítomné všechny potøebné soubory (zvoneni.txt; wificonf.lua) jinak se program ukonèí! 
+Pøed nahráváním se uivatel musí pøipojit na nahrávací WiFi sí zvonku (SSID: "ZvonekNahraj", heslo: "asdfasdf").
+Pøi nahrávání nového souboru zvonìní mìjte vdy na pamìti, e ve sloce musí bıt vdy správnı WiFiConf, jinak se zaøízení nepøipojí k síti! 
+Po kadém nahrání vyèkejte cca. 10 vteøin pøed další operací. Zaøízení se znovu zavádí. 
+
+WiFiConf musí bıt vdy platnı pro aktuální WiFi sí a musí se pøed její zmìnou pøehrát, jinak se zaøízení nepøipojí a nebude fungovat! 
+Nouzovì jde stále pøehrát pøes nahrávací sí.
+
+Aplikace se sama pøipojí k síti zvonku a sama se i vrátí do pùvodní sítì. Pokud se tak nestane, o všem informuje prùbìnì uivatele.
+
+	------------------
+	STRUKTURY SOUBORÙ:
+	------------------
+
+		-----------------------------------------------
+		Zvoneni.txt (soubor s definicemi èasù zvonìní):
+		-----------------------------------------------
+			Všechny èasy musí bıt øazeny chronologicky od nejdøívìjšího po nejpozdìjší, jinak nelze zaruèit správnı chod zaøízení!
+			Na kadém øádku smí bıt maximálnì jeden èas zvonìní. Èas zvonení, délku zvonìní a rozhodovací pøepínaèe 
+			od sebe oddìlujeme mezerníkem (znak 0x20). 
+			Jednotlivé pøepínaèe se píší dohromady a naopak mezerníkem bıt oddìlené nesmí.
+			Zde platí první pozice - Pondìlí, druhá - Úterı atd. Log 1 znamená, e záznam bude pro tento den platnı, log 0 bude ignorován.
+			Kadı zápis zvonìní musí bıt ukonèen Enterem (znak \n, resp. EOL (EndOfLine), resp. 0x0A).
+
+			Vzorovı pøíklad pro zvonìní v osm hodin dvacet minut po dobu dvaceti vteøin, platnı v Pondìlí, Støedu a Pátek:
+
+				082000 20 1010100
+
+			Èasy není nutné doplòovat zleva nulami do poètu, take vıše zmínìnı èas je moné zapsat i jako 82000.
+			Délka zvonìní mùe bıt i delší ne 59 vteøin, zde je ale nutné pøipomenout, e po 59 nenásleduje 60, ale 100 
+			a dále pokraèuje pøièítání a po hodnotu 159, kde se opìt první èíslice o jedno zvìtší.
+			V tomto poli se v ádném pøípadì nesmí vyskytnout hodnota vìtší 60 vèetnì, jinak nastane pád zaøízení a nebude moné ho zavést!
+
+			Zápis zvonìní v 11:49 po dobu jedné minuty a 29 vteøin platnıch pouze v Nedìli
+			a poté ve 12:15:13 po dobu jedné vteøiny platnıch v Úterı, Støedu a Ètvrtek bude vypadat takto:
+
+				114900 129 0000001
+				121513 1 0111000
+
+				nebo takto
+
+				114900 129 0000001
+				121513 001 0111000
+
+				opìt je jedno, zda-li pro pøehlednost doplníme èíslo zleva nulami, zaøízení je ignoruje - neplatí ovšem u pøepínaèù!
+
+	-----------------------
+	ZMÌNY OPROTI VERZI 1.0:
+	-----------------------
+ 		- odpadá potøeba zadávat ruènì adresu zaøízení. Aplikace si jej najde v síti sama.
+
+	---------------------
+	MONÉ STAVY ZAØÍZENÍ:
+	---------------------
+		--------------------------------------------------------
+ 		- pøi startu zaøízení svítí všechny indikaèní LED diody:
+		--------------------------------------------------------
+
+			- èervená dioda indikuje, e zaøízení je napájeno ze sítì 220V, pokud nesvítí, zaøízení je napájeno ze záloního zdroje.
+
+			- lutá dioda pøi startu indikuje naètení hlavního vlákna programu. Po jejím zhasnutí je program správnì zinicializován. 
+	  		- Pokud svítí pozdìji v prùbìhu bìhu zaøízení, indikuje ruèní ztišení pøepínaèem z boku zaøízení. 
+			  V takovém pøípadì ruèní volba pøebije automatické zvonìní.
+
+			- zelená dioda pøi startu indikuje pøipojení k WiFi síti a úspìšnou synchronizaci èasu se serverem.
+	  		- Pokud se dioda rozsvítí pozdìji v prùbìhu bìhu zaøízení, indikuje, e ji pro tento den nastalo poslední zvonìní. 
+			  Zaøízení je tedy v úsporném reimu a do pùlnoci, kdy probìhne znovu naètení seznamu zvonìní.
+	
+	------------------
+ 	DALŠÍ MONÉ STAVY:
+	------------------
+
+		- zelená dioda bliká v protifázi se lutou:
+	  	  Došlo k chybì pøi synchronizaci èasu se serverem, nebo nebylo moné se na server vùbec obrátit. 
+		  Ovìøte, zda má zaøízení pøístup k internetu. 
+	  	  Po obnovení spojení zaøízení automaticky provede synchronizaci èasu se serverem. Pokud k tomu nedojde, restartujte zaøízení.
+
+		- zelená dioda bliká spoleènì se lutou:
+	  	  Soubor zvonìní je poškozenı! Pøehrajte zaøízení novım souborem.
+
+V Praze 3.11.2017 Jáchym Hurtík
