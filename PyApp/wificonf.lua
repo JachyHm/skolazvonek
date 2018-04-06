@@ -1,5 +1,2 @@
 SSID="EMtest"
 HESLO="13znakudlouhe"
---IPadresa=""
---MASKAsite=""
---BRANAsite=""

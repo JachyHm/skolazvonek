@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['PDN.py'],
-             pathex=['c:\\NodeMCU\\zdrojaky\\ZvonekSkola\\PyApp'],
+             pathex=['d:\\NodeMCU\\zdrojaky\\ZvonekSkola\\PyApp'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -25,4 +25,5 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True , icon='ikona.ico')
+          runtime_tmpdir=None,
+          console=True , version='version.rc', icon='ikona.ico')
